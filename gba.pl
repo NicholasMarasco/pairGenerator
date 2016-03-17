@@ -7,34 +7,39 @@
 #   Shows old player match ups
 #   Shows data file formatting
 
+use strict;
 use File::Basename;
 use Getopt::Long;
 
 # Usage variables
-$cmd = basename($0);
-$options = "  options:\n".
-           "    -p, --pair    Generates pairs\n".
-           "    -r, --rank    Shows ranking of players\n".
-           "    -o, --old     Shows old player pairs\n".
-           "    -f, --format  Shows data file format\n";
-$usage = "usage: $cmd [-p|-r|-o|-f] <data file>\n".$options;
+my $cmd = basename($0);
+my $options = "  options:\n".
+              "    -p, --pair    Generates pairs\n".
+              "    -r, --rank    Shows ranking of players\n".
+              "    -o, --old     Shows old player pairs\n".
+              "    -f, --format  Shows data file format\n";
+my $usage = "usage: $cmd [-p|-r|-o|-f] <data file>\n".$options;
 
 # Index variables
-$indexName=1;
-$indexTeam=2;
-$indexWins=3;
-$indexLoss=4;
-$indexDiff=5;
-$indexPlay=6;
+my $indexName=1;
+my $indexTeam=2;
+my $indexWins=3;
+my $indexLoss=4;
+my $indexDiff=5;
+my $indexPlay=6;
+
+# Data storage variables
+my %data;
+my %pairs;
 
 # Option variables
-$pair = 0;
-$rank = 0;
-$old = 0;
-$format = 0;
-$help = 0;
+my $pair = 0;
+my $rank = 0;
+my $old = 0;
+my $format = 0;
+my $help = 0;
 
-$result = GetOptions(
+my $result = GetOptions(
   "help|usage" => \$help,   # print help and exit
   "pair"       => \$pair,   # generate new pairs
   "rank"       => \$rank,   # rank players by score 
@@ -57,7 +62,7 @@ if($format){
 }
 
 # Check if file exists and is readable
-$dataFile = $ARGV[0];
+my $dataFile = $ARGV[0];
 die "$dataFile: no such file\n" if(! -e $dataFile);
 open(FILE, '<',$dataFile) or die "$dataFile: cannot open for reading\n";
 
@@ -88,14 +93,14 @@ elsif($old){
 
 # Subroutine to print players in rank order
 sub printRank(){
-  @ranking = sort byWinDiff keys %data;
+  my @ranking = sort byWinDiff keys %data;
   while(@ranking){
-    $player = shift @ranking;
-    $playerName = ${$data{$player}}[$indexName];
+    my $player = shift @ranking;
+    my $playerName = ${$data{$player}}[$indexName];
     next if($playerName eq "XXX");
-    $playerWins = ${$data{$player}}[$indexWins];
-    $playerLoss = ${$data{$player}}[$indexLoss];
-    $playerDiff = ${$data{$player}}[$indexDiff];
+    my $playerWins = ${$data{$player}}[$indexWins];
+    my $playerLoss = ${$data{$player}}[$indexLoss];
+    my $playerDiff = ${$data{$player}}[$indexDiff];
     print "$playerName\t",
           "Wins: $playerWins ",
           "Losses: $playerLoss ",
@@ -118,18 +123,18 @@ sub printFormat(){
 
 # Subroutine to print the old player match ups
 sub printOld(){
-  @playerIDs = sort{$a<=>$b}keys%data;
+  my @playerIDs = sort{$a<=>$b}keys%data;
   pop @playerIDs;
   while(@playerIDs){
-    $player = shift @playerIDs;
-    $playerName = ${$data{$player}}[$indexName];
+    my $player = shift @playerIDs;
+    my $playerName = ${$data{$player}}[$indexName];
     print "$playerName:\n";
-    @pastPlayers = split/,/,${$data{$player}}[$indexPlay];
+    my @pastPlayers = split/,/,${$data{$player}}[$indexPlay];
     shift @pastPlayers;
-    $i = 1;
+    my $i = 1;
     while(@pastPlayers){
-      $pastPlayer = shift @pastPlayers;
-      $pastPlayerName = ${$data{$pastPlayer}}[$indexName];
+      my $pastPlayer = shift @pastPlayers;
+      my $pastPlayerName = ${$data{$pastPlayer}}[$indexName];
       print "    Battle $i: $pastPlayerName\n";
       $i++;
     }
@@ -139,26 +144,28 @@ sub printOld(){
 # Subroutine to print player names and teams
 sub printPretty(){
   print "\n";
-  @pairIDs = sort{$a<=>$b}keys%pairs;
+  my @pairIDs = sort{$a<=>$b}keys%pairs;
   while(@pairIDs){
-    $player = shift @pairIDs;
-    $player1Team = ${$data{$player}}[$indexTeam];
-    $player1Name = ${$data{$player}}[$indexName];
-    $player2Team = ${$data{$pairs{$player}}}[$indexTeam];
-    $player2Name = ${$data{$pairs{$player}}}[$indexName];
+    my $player = shift @pairIDs;
+    my $player1Team = ${$data{$player}}[$indexTeam];
+    my $player1Name = ${$data{$player}}[$indexName];
+    my $player2Team = ${$data{$pairs{$player}}}[$indexTeam];
+    my $player2Name = ${$data{$pairs{$player}}}[$indexName];
     print "$player1Team ($player1Name) vs. $player2Team ($player2Name)\n\n";
   }
 }
 
 # Subroutine to generate pairs of players
 sub genPairs(){
-  @playerIDs = sort{$a<=>$b}keys%data;
-  $playerNum = @playerIDs;
+  my @playerIDs = sort{$a<=>$b}keys%data;
+  my $playerNum = @playerIDs;
   while(@playerIDs){
-    $player = shift @playerIDs;
-    @pData = @{$data{$player}};
-    @played = split/,/,$pData[$indexPlay];
+    my $player = shift @playerIDs;
+    my @pData = @{$data{$player}};
+    my @played = split/,/,$pData[$indexPlay];
     #LASER MARK
+    my $randID;
+    my $index;
     do{
       $randID = int(rand($playerNum));
       $index = 0;
