@@ -57,7 +57,7 @@ die "$usage\n" if(@ARGV != 1
 $rank = 1 if($pair + $rank + $old + $format == 0);
 
 if($format){
-  &printFormat();
+  printFormat();
   exit(0);
 }
 
@@ -79,16 +79,16 @@ close FILE;
 
 # Generate pairs and print pretty version
 if($pair){
-  &genPairs();
-  &printPretty();
+  genPairs();
+  printPretty();
 }
 # Print players in order of highest wins and differential
 elsif($rank){
-  &printRank();
+  printRank();
 }
 # Print old player match ups
 elsif($old){
-  &printOld;
+  printOld();
 }
 
 # Subroutine to print players in rank order
@@ -123,7 +123,7 @@ sub printFormat(){
 
 # Subroutine to print the old player match ups
 sub printOld(){
-  my @playerIDs = sort{$a<=>$b}keys%data;
+  my @playerIDs = sort{$a<=>$b} keys %data;
   pop @playerIDs;
   while(@playerIDs){
     my $player = shift @playerIDs;
@@ -144,7 +144,7 @@ sub printOld(){
 # Subroutine to print player names and teams
 sub printPretty(){
   print "\n";
-  my @pairIDs = sort{$a<=>$b}keys%pairs;
+  my @pairIDs = sort{$a<=>$b} keys %pairs;
   while(@pairIDs){
     my $player = shift @pairIDs;
     my $player1Team = ${$data{$player}}[$indexTeam];
@@ -157,12 +157,12 @@ sub printPretty(){
 
 # Subroutine to generate pairs of players
 sub genPairs(){
-  my @playerIDs = sort{$a<=>$b}keys%data;
+  my @playerIDs = sort{$a<=>$b} keys %data;
   my $playerNum = @playerIDs;
   while(@playerIDs){
     my $player = shift @playerIDs;
     my @pData = @{$data{$player}};
-    my @played = split/,/,$pData[$indexPlay];
+    my @played = split/,/, $pData[$indexPlay];
     #LASER MARK
     my $randID;
     my $index;
@@ -170,8 +170,10 @@ sub genPairs(){
       $randID = int(rand($playerNum));
       $index = 0;
       $index++ until $playerIDs[$index] == $randID or 
-                     $index == $playerNum; 
-    } while(grep /^$randID$/,@played or $index == $playerNum or $randID == 0);
+                     $index == $playerNum;
+    } while(grep /^$randID$/, @played or
+            $index == $playerNum or 
+            $randID == 0);
     splice @playerIDs,$index,1;
     #print "Played: @played\nRand: $randID\n\n";
     $pairs{$player}=$randID;
